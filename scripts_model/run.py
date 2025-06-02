@@ -189,7 +189,7 @@ def run(cfg: DictConfig) -> None:
 
     hydra.utils.log.info("Starting testing!")
     ckpt_path = "last" if cfg.train.pl_trainer.fast_dev_run else "best"
-    trainer.test(datamodule=datamodule, ckpt_path=ckpt_path)
+    #trainer.test(datamodule=datamodule, ckpt_path=ckpt_path)
 
     # Logger closing to release resources/avoid multi-run conflicts
     if wandb_logger is not None:
