@@ -233,7 +233,7 @@ class SPDNonIsotropicRandom(AbstractSPD, manifm_SPD):
         assert mean.size(-1) == logmap_std.size(-1)
         self.assert_spd(mean)
         self.register_buffer("mean", mean)
-        self.register_buffer("std", logmap_std)
+        self.register_buffer("logmap_std", logmap_std)
 
     def random_base(self, *size, dtype=None, device=None) -> torch.Tensor:
         assert size[-1] == self.mean.size(-1)
@@ -428,7 +428,7 @@ def compute_spd_pLTL_given_n_std_coef(
 
         iso = SPDGivenN.closest_isotropic(spd_vecs_given_n, Riem_dist=True)
         log_noise_samples = s.logmap(prior_mean, iso)[:, 0]
-        std_coefs.append((log_noise_samples.std() ** (3 / 2)) / n)
+        std_coefs.append((log_noise_samples.std(unbiased=False) ** (3 / 2)) / n) 
     std_coefs = torch.stack(std_coefs, dim=0)
     return std_coefs.mean(), std_coefs.std()
 
@@ -458,14 +458,14 @@ if __name__ == "__main__":
              mean, std = compute_spd_pLTL_mean_logmap_std(dataset)
              stats[dataset] = {
                  "mean": mean.cpu().tolist(),
-                 "std": std.cpu().tolist(),
+                 "logmap_std": std.cpu().tolist(),
              }
          with open(file, "w") as f:
              yaml.dump(stats, f)
      else:
          stats = OmegaConf.load(str(file))
     # density
-    compute_stats = False
+    compute_stats = True
     file = Path(__file__).parent / "atom_density.yaml"
     file = file.resolve()
     if compute_stats:
@@ -528,19 +528,24 @@ if __name__ == "__main__":
     f = torch.tensor(8).pow(1 / 3) * manifm_SPD().vectorize(torch.eye(l.shape[-1]))
     logdf = manifm_SPD().logmap(d, f)
 
-    # do some testing for SPDNonIsotropicRandom
+    pL_stats = OmegaConf.load(Path(__file__).parent / "spd_pLTL_stats.yaml")  # ← new line
+
     for dataset in tqdm(list(dataset_options.__args__)):
-        s = manifm_SPD(Riem_geodesic=True, Riem_norm=True)
-        mean = torch.tensor(stats[dataset]["mean"])
-        std = torch.tensor(stats[dataset]["std"])
-        assert (torch.linalg.eigvals(s.devectorize(mean)).imag <= 1e-4).all()
-        assert (torch.linalg.eigvals(s.devectorize(mean)).real > 0.0).all()
+      mean_vec = torch.tensor(pL_stats[dataset]["mean"])           # now using pL_stats
+      std_vec  = torch.tensor(pL_stats[dataset]["logmap_std"])     # correct key name
 
-        spd = SPDNonIsotropicRandom(mean, std)
-        r = spd.random_base(10, mean.size(-1))
-        lp = spd.base_logprob(r)
-        print(r, lp)
+      # optional sanity check
+      if mean_vec.ndim == 0:
+          raise ValueError(
+              f"Loaded mean for {dataset} is scalar—wrong YAML? shape {mean_vec.shape}"
+          )
 
-        r = spd.random_base(3, 10, mean.size(-1))
-        lp = spd.base_logprob(r)
-        print(r, lp)
+      s = manifm_SPD(Riem_geodesic=True, Riem_norm=True)
+      spd = SPDNonIsotropicRandom(mean_vec, std_vec)
+      r   = spd.random_base(10, mean_vec.size(-1))
+      lp  = spd.base_logprob(r)
+      print(r, lp)
+
+      r  = spd.random_base(3, 10, mean_vec.size(-1))
+      lp = spd.base_logprob(r)
+      print(r, lp)
