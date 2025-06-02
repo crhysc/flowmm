@@ -445,25 +445,25 @@ if __name__ == "__main__":
     from tqdm import tqdm
 
     # removed because we're not using p(L) directly anymore so no need to fit it
-    # # mean and std of p(L)
-    # compute_stats = True
-    # file = Path(__file__).parent / "spd_pLTL_stats.yaml"
-    # file = file.resolve()
-    # if compute_stats:
-    #     print("calculate the overall stats of p(L) for each dataset")
-    #     stats = {}
-    #     pbar = tqdm(list(dataset_options.__args__))
-    #     for dataset in pbar:
-    #         pbar.set_description(f"{dataset=}")
-    #         mean, std = compute_spd_pLTL_mean_logmap_std(dataset)
-    #         stats[dataset] = {
-    #             "mean": mean.cpu().tolist(),
-    #             "std": std.cpu().tolist(),
-    #         }
-    #     with open(file, "w") as f:
-    #         yaml.dump(stats, f)
-    # else:
-    #     stats = OmegaConf.load(str(file))
+    # mean and std of p(L)
+     compute_stats = True
+     file = Path(__file__).parent / "spd_pLTL_stats.yaml"
+     file = file.resolve()
+     if compute_stats:
+         print("calculate the overall stats of p(L) for each dataset")
+         stats = {}
+         pbar = tqdm(list(dataset_options.__args__))
+         for dataset in pbar:
+             pbar.set_description(f"{dataset=}")
+             mean, std = compute_spd_pLTL_mean_logmap_std(dataset)
+             stats[dataset] = {
+                 "mean": mean.cpu().tolist(),
+                 "std": std.cpu().tolist(),
+             }
+         with open(file, "w") as f:
+             yaml.dump(stats, f)
+     else:
+         stats = OmegaConf.load(str(file))
     # density
     compute_stats = False
     file = Path(__file__).parent / "atom_density.yaml"
