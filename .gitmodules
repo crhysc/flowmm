@@ -1,6 +1,3 @@
-[submodule "remote/cdvae"]
-	path = remote/cdvae
-	url = git@github.com:bkmi/cdvae.git
 [submodule "remote/DiffCSP-official"]
 	path = remote/DiffCSP-official
 	url = git@github.com:bkmi/DiffCSP-official.git
