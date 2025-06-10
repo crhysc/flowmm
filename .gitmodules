@@ -4,3 +4,6 @@
 [submodule "remote/riemannian-fm"]
 	path = remote/riemannian-fm
 	url = git@github.com:crhysc/riemannian-fm.git
+[submodule "remote/cdvae"]
+	path = remote/cdvae
+	url = git@github.com:crhysc/cdvae.git
