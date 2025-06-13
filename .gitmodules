@@ -6,3 +6,6 @@
 	path = remote/riemannian-fm
 	url = git@github.com:crhysc/riemannian-fm.git
 	branch = main
+[submodule "remote/DiffCSP-official"]
+	path = remote/DiffCSP-official
+	url = git@github.com:bkmi/DiffCSP-official.git
